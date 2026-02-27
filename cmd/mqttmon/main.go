@@ -66,8 +66,8 @@ func main() {
 	topics := []string{
 		fmt.Sprintf("/APP/%s/NEWS", deviceSN),
 		// Add more topics here if needed
-		// "/ESY/PVVC/+/UP",
-		// "/TIMEER/+/NEWS",
+		fmt.Sprintf("/ESY/PVVC/%s/UP", deviceSN),
+		fmt.Sprintf("/TIMEER/%s/NEWS", deviceSN),
 	}
 
 	opts := mqtt.NewClientOptions().
@@ -84,17 +84,6 @@ func main() {
 			client.Subscribe(topic, 0, f)
 		}
 	})
-
-	// OnSubscribeHandler - called when subscription is acknowledged
-	opts.SetOnSubscribeHandler(func(client mqtt.Client, msgID uint16, granted []*mqtt.SubscriptionOptions) {
-		fmt.Printf("\n=== OnSubscribeHandler ===\n")
-		fmt.Printf("  Message ID: %d\n", msgID)
-		for i, grant := range granted {
-			fmt.Printf("  Topic[%d]: %s, QoS: %d\n", i, grant.Topic, grant.Qos)
-		}
-		fmt.Println("===========================\n")
-	})
-
 	opts.SetConnectionLostHandler(func(client mqtt.Client, err error) {
 		fmt.Printf("Connection lost: %v\n", err)
 	})
