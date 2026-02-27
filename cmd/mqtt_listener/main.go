@@ -63,11 +63,14 @@ func main() {
 	deviceSN := "6CC84075B7AC"
 
 	// Topics to subscribe (can add multiple)
-	topics := []string{
-		fmt.Sprintf("/APP/%s/NEWS", deviceSN),
+	topics := []struct {
+		topic string
+		qos   byte
+	}{
+		{topic: fmt.Sprintf("/APP/%s/NEWS", deviceSN), qos: 0},
 		// Add more topics here if needed
-		// "/ESY/PVVC/+/UP",
-		// "/TIMEER/+/NEWS",
+		// {topic: "/ESY/PVVC/+/UP", qos: 0},
+		// {topic: "/TIMEER/+/NEWS", qos: 0},
 	}
 
 	opts := mqtt.NewClientOptions().
@@ -79,9 +82,11 @@ func main() {
 
 	opts.SetOnConnectHandler(func(client mqtt.Client) {
 		fmt.Println("Connected to MQTT broker")
-		for _, topic := range topics {
-			fmt.Printf("Subscribing to: %s\n", topic)
-			client.Subscribe(topic, 0, f)
+		for _, t := range topics {
+			fmt.Printf("Subscribing to: %s (QoS: %d)\n", t.topic, t.qos)
+			if token := client.Subscribe(t.topic, t.qos, f); token.Wait() && token.Error() != nil {
+				fmt.Printf("Failed to subscribe to %s: %v\n", t.topic, token.Error())
+			}
 		}
 	})
 
